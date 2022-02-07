@@ -2,7 +2,19 @@ import sys
 import os
 
 def main():
-    pass
+    extensions = []
+    recursive = False
+    output = 'Results.txt'
+
+    lookingFor = 'starting_place'
+
+    for argIndex in range(1, len(sys.argv)):
+        arg = sys.argv[argIndex]
+        
+        if arg.startswith('-'):
+            print('argument found: ', arg)
+        else:
+            print('argument param found: ', arg)
 
 def validateFile(filename):
     """

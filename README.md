@@ -9,9 +9,9 @@
 
 ## Usage
 
-`python analyze.py [directory or file] -r -extensions .kt .java -o myDirectory/myFileResults.txt`
+`python analyze.py [directory or file] [arguments (-r, -extensions .kt .java, -o myDirectory/myFileResults.txt)]`
 
-More will be added soon but language support requires writing regular expressions to detect comments in each language. This is where the delay comes from.
+More will be added soon, but language support requires writing regular expressions to detect comments in each language. This is where the delay comes from.
 
 ## Description
 
