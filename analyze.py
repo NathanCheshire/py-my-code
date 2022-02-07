@@ -1,7 +1,10 @@
 from audioop import findfit
+from itertools import count
 from msilib.schema import Directory
 import sys
 import os
+
+from numpy import block
 
 def main():
     startingPlace = None
@@ -66,21 +69,12 @@ def main():
         print('Error: must provide at least one extension')
         return
 
-    #print('Staring place: ', startingPlace)
-    #print('Recursive: ' + str(recursive))
-    #print('Extensions: ' + str(extensions))
-    #print('Output: ' + output)
+    #todo keep track of running totals here
 
-    if recursive:
-        for file in findFiles(startingPlace, extensions = extensions):
-            print(file)
-    else:
-        pass
+    for file in findFiles(startingPlace, extensions = extensions, recursive = recursive):
+        countComments(file)
 
-    #todo now we need to get files in dir with extension or the file given OR
-    # recursively find all files with the provided extensions
-
-def findFiles(startingDirectory, extensions = []):
+def findFiles(startingDirectory, extensions = [], recursive = False):
     ret = []
 
     if len(extensions) == 0:
@@ -89,14 +83,52 @@ def findFiles(startingDirectory, extensions = []):
 
     if os.path.isdir(startingDirectory):
         for subDir in os.listdir(startingDirectory):
-            ret = ret + findFiles(os.path.join(startingDirectory, subDir), extensions)
+            if recursive:
+                ret = ret + findFiles(os.path.join(startingDirectory, subDir), extensions, recursive)
+            else:
+                ret.append(os.path.join(startingDirectory, subDir))
     else:
         for extension in extensions:
             if startingDirectory.endswith(extension):
                 ret.append(startingDirectory)
                 
-    
     return ret
+
+def countComments(file):
+    print('On file: ' + file)
+
+    numComments = 0
+    lines = 0
+    blockMode = False
+    blankLines = 0
+
+    if not os.path.exists(file):
+        print('Error: provided file does not exist: ', file)
+        return
+
+    for line in open(file,'r').readlines():
+        if len(line.strip()) > 0:
+            lines = lines + 1
+
+            if line.strip().startswith('/*'):
+                blockMode = True
+            elif line.strip().endswith('*/'):
+                blockMode = False
+
+            if line.strip().startswith('//') and file.endswith('.java'):
+                numComments = numComments + 1
+            elif blockMode:
+                numComments = numComments + 1
+            elif (line.strip()) == 0:
+                blankLines = blankLines + 1
+            elif line.strip().startswith('/*') and line.strip().endswith('*/'):
+                numComments = numComments + 1
+        else:
+            blankLines = blankLines + 1
+
+    print('Comments found: ' + str(numComments))
+    print('Lines found: ' + str(lines))
+    print('Blank lines found: ' + str(blankLines))
 
 if __name__ == '__main__':
     main()
