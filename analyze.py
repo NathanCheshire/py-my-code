@@ -4,6 +4,9 @@ import os
 from numpy import block
 
 def main():
+    global lineSep
+    lineSep = '---------------------------------'
+
     startingPlace = None
     extensions = []
     recursive = False
@@ -70,12 +73,15 @@ def main():
     totalComments = 0
     totalBlankLines = 0
 
-    #todo keep track of running totals here
-
     #todo how to detect what extensions go with which analyze?
     #todo maybe an annotation
     for file in findFiles(startingPlace, extensions = extensions, recursive = recursive):
+        print('On file: ' + file)
+
         tuple = javaFileAnalyze(file)
+
+        print('Files lines, comments, blank lines: ' + str(tuple[0]) + ',' + str(tuple[1]) + ',' + str(tuple[2]))
+        print(lineSep)
 
         totalLines = totalLines + tuple[0]
         totalComments = totalComments + tuple[1]
@@ -108,8 +114,6 @@ def findFiles(startingDirectory, extensions = [], recursive = False):
 
 def javaFileAnalyze(file):
     """Returns a tuple of the number of lines, comments, and blank lines in that order"""
-
-    print('On file: ' + file)
 
     numComments = 0
     numLines = 0
