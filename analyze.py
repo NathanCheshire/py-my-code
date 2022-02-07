@@ -1,3 +1,5 @@
+from audioop import findfit
+from msilib.schema import Directory
 import sys
 import os
 
@@ -63,11 +65,38 @@ def main():
     if len(extensions) == 0:
         print('Error: must provide at least one extension')
         return
-        
-    print('Staring place: ', startingPlace)
-    print('Recursive: ' + str(recursive))
-    print('Extensions: ' + str(extensions))
-    print('Output: ' + output)
+
+    #print('Staring place: ', startingPlace)
+    #print('Recursive: ' + str(recursive))
+    #print('Extensions: ' + str(extensions))
+    #print('Output: ' + output)
+
+    if recursive:
+        for file in findFiles(startingPlace, extensions = extensions):
+            print(file)
+    else:
+        pass
+
+    #todo now we need to get files in dir with extension or the file given OR
+    # recursively find all files with the provided extensions
+
+def findFiles(startingDirectory, extensions = []):
+    ret = []
+
+    if len(extensions) == 0:
+        print('Error: must provide valid extensions')
+        return
+
+    if os.path.isdir(startingDirectory):
+        for subDir in os.listdir(startingDirectory):
+            ret = ret + findFiles(os.path.join(startingDirectory, subDir), extensions)
+    else:
+        for extension in extensions:
+            if startingDirectory.endswith(extension):
+                ret.append(startingDirectory)
+                
+    
+    return ret
 
 if __name__ == '__main__':
     main()
