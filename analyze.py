@@ -1,6 +1,3 @@
-from audioop import findfit
-from itertools import count
-from msilib.schema import Directory
 import sys
 import os
 
