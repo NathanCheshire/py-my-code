@@ -66,10 +66,25 @@ def main():
         print('Error: must provide at least one extension')
         return
 
+    totalLines = 0
+    totalComments = 0
+    totalBlankLines = 0
+
     #todo keep track of running totals here
 
+    #todo how to detect what extensions go with which analyze?
+    #todo maybe an annotation
     for file in findFiles(startingPlace, extensions = extensions, recursive = recursive):
-        countComments(file)
+        tuple = javaFileAnalyze(file)
+
+        totalLines = totalLines + tuple[0]
+        totalComments = totalComments + tuple[1]
+        totalBlankLines = totalBlankLines + tuple[2]
+
+    print("Total lines: " + str(totalLines))
+    print("Total comments: " + str(totalComments))
+    print("Total blank lines: " + str(totalBlankLines))
+    print("Code to comment ratio: " + str(float(totalLines - totalComments) / float(totalComments)))
 
 def findFiles(startingDirectory, extensions = [], recursive = False):
     ret = []
@@ -91,13 +106,15 @@ def findFiles(startingDirectory, extensions = [], recursive = False):
                 
     return ret
 
-def countComments(file):
+def javaFileAnalyze(file):
+    """Returns a tuple of the number of lines, comments, and blank lines in that order"""
+
     print('On file: ' + file)
 
     numComments = 0
-    lines = 0
+    numLines = 0
     blockMode = False
-    blankLines = 0
+    numBlankLines = 0
 
     if not os.path.exists(file):
         print('Error: provided file does not exist: ', file)
@@ -105,7 +122,7 @@ def countComments(file):
 
     for line in open(file,'r').readlines():
         if len(line.strip()) > 0:
-            lines = lines + 1
+            numLines = numLines + 1
 
             if line.strip().startswith('/*'):
                 blockMode = True
@@ -117,15 +134,13 @@ def countComments(file):
             elif blockMode:
                 numComments = numComments + 1
             elif (line.strip()) == 0:
-                blankLines = blankLines + 1
+                numBlankLines = numBlankLines + 1
             elif line.strip().startswith('/*') and line.strip().endswith('*/'):
                 numComments = numComments + 1
         else:
-            blankLines = blankLines + 1
+            numBlankLines = numBlankLines + 1
 
-    print('Comments found: ' + str(numComments))
-    print('Lines found: ' + str(lines))
-    print('Blank lines found: ' + str(blankLines))
+    return (numLines, numComments, numBlankLines)
 
 if __name__ == '__main__':
     main()
