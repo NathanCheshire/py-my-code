@@ -3,6 +3,8 @@ import os
 
 from numpy import block
 
+from extensionDecorator import my_decorator
+
 def main():
     global lineSep
     lineSep = '---------------------------------'
@@ -78,7 +80,7 @@ def main():
     for file in findFiles(startingPlace, extensions = extensions, recursive = recursive):
         print('On file: ' + file)
 
-        tuple = javaFileAnalyze(file)
+        tuple = analyzeFile(file)
 
         print('Files lines, comments, blank lines: ' + str(tuple[0]) + ',' + str(tuple[1]) + ',' + str(tuple[2]))
         print(lineSep)
@@ -112,7 +114,7 @@ def findFiles(startingDirectory, extensions = [], recursive = False):
                 
     return ret
 
-def javaFileAnalyze(file):
+def analyzeFile(file):
     """Returns a tuple of the number of lines, comments, and blank lines in that order"""
 
     numComments = 0
@@ -124,27 +126,64 @@ def javaFileAnalyze(file):
         print('Error: provided file does not exist: ', file)
         return
 
-    for line in open(file,'r').readlines():
-        if len(line.strip()) > 0:
-            numLines = numLines + 1
+    fileLines = open(file,'r').readlines()
 
-            if line.strip().startswith('/*'):
-                blockMode = True
-            elif line.strip().endswith('*/'):
-                blockMode = False
+    if file.endswith('.java') or file.endswith('.kt'):
+        for line in fileLines:
+            if len(line.strip()) > 0:
+                numLines = numLines + 1
 
-            if line.strip().startswith('//') and file.endswith('.java'):
-                numComments = numComments + 1
-            elif blockMode:
-                numComments = numComments + 1
-            elif (line.strip()) == 0:
+                # starts with //
+                line = line.strip()
+
+                #multiline
+                if line.startswith('/*') and line.endswith('*/'):
+                    numComments = numBlankLines + 1
+                elif line.startswith('/*'):
+                    blockMode = True
+                elif line.endswith('*/'):
+                    blockMode = False
+
+                if blockMode:
+                    numComments = numComments + 1
+                elif line.startswith('//'):
+                    numComments = numComments + 1
+            else:
                 numBlankLines = numBlankLines + 1
-            elif line.strip().startswith('/*') and line.strip().endswith('*/'):
-                numComments = numComments + 1
-        else:
-            numBlankLines = numBlankLines + 1
+    elif file.endswith('.py'):
+         for line in fileLines:
+            if len(line.strip()) > 0:
+                numLines = numLines + 1
+
+                line = line.strip()
+
+                if line.startswith('"""') and line.endswith('"""'):
+                    numComments = numComments + 1
+                elif line.startwith("'''") and line.endswith("'''"):
+                    numComments = numComments + 1
+                elif line.startswith('"""'):
+                    blockMode = True
+                elif line.startswith("'''"):
+                    blockMode = True
+                elif line.endswith('"""'):
+                    blockMode = False
+                elif line.endswith("'''"):
+                    blockMode = False
+
+                if blockMode:
+                    numComments = numComments + 1
+                elif line.startswith('#'):
+                    numComments = numComments + 1
+            else:
+                numBlankLines = numBlankLines + 1
+    elif '.' not in file:
+        print('File has no extension: ' + file)
+        return
+    else:
+        print('Unsupported language: ' + file)
+        return
 
     return (numLines, numComments, numBlankLines)
-
+    
 if __name__ == '__main__':
     main()
