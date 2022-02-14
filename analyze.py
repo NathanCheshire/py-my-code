@@ -1,3 +1,4 @@
+from mailbox import linesep
 import sys
 import os
 from matplotlib import pyplot as plt
@@ -78,15 +79,20 @@ def parseArgs():
     totalBlankLines = 0
     totalCodeLines = 0
 
+    lines = []
+
     print(lineSep)
 
     for file in findFiles(startingPlace, extensions = extensions, recursive = recursive):
         print('On file: ' + file)
+        lines.append(('On file: ' + file))
 
         tuple = analyzeFile(file)
 
         print('Files lines, comments, blank lines: ' + str(tuple[0]) + ',' + str(tuple[1]) + ',' + str(tuple[2]))
+        lines.append(('Files lines, comments, blank lines: ' + str(tuple[0]) + ',' + str(tuple[1]) + ',' + str(tuple[2])))
         print(lineSep)
+        lines.append(lineSep)
 
         totalLines = totalLines + tuple[0]
         totalComments = totalComments + tuple[1]
@@ -98,9 +104,16 @@ def parseArgs():
         totalCodeLines = totalLines - totalBlankLines - totalComments
 
         print("Total lines: " + str(totalLines))
+        lines.append(("Total lines: " + str(totalLines)))
+
         print("Total comments: " + str(totalComments))
+        lines.append(("Total comments: " + str(totalComments)))
+
         print("Total blank lines: " + str(totalBlankLines))
+        lines.append(("Total comments: " + str(totalComments)))
+
         print("Code to comment ratio: " + str(float(totalLines - totalComments) / float(totalComments)))
+        lines.append(("Code to comment ratio: " + str(float(totalLines - totalComments) / float(totalComments))))
 
         labels = ['Code lines (' + str(totalCodeLines) + ')',
         'Comments (' + str(totalComments) + ')',
@@ -122,8 +135,15 @@ def parseArgs():
 
             print('Saved master output to ', output, '.txt', sep = '')
 
+            file = open((output + '.txt'), 'w+')
+
+            for line in lines:
+                file.write(str(line) + '\n')
+            
+            file.close()
+
             print('Saved master chart to ', output, '.png', sep = '')
-            plt.savefig( output + '.png')
+            plt.savefig(output + '.png')
 
 
 def findFiles(startingDirectory, extensions = [], recursive = False):
