@@ -1,11 +1,13 @@
 import sys
 import os
+from matplotlib import pyplot as plt
 
-from numpy import block
+def parseArgs():
+    '''
+    Parses the provided command line arguments and outputs 
+    the py-my-code results to the user.
+    '''
 
-from extensionDecorator import my_decorator
-
-def main():
     global lineSep
     lineSep = '---------------------------------'
 
@@ -74,9 +76,10 @@ def main():
     totalLines = 0
     totalComments = 0
     totalBlankLines = 0
+    totalCodeLines = 0
 
-    #todo how to detect what extensions go with which analyze?
-    #todo maybe an annotation
+    print(lineSep)
+
     for file in findFiles(startingPlace, extensions = extensions, recursive = recursive):
         print('On file: ' + file)
 
@@ -89,12 +92,35 @@ def main():
         totalComments = totalComments + tuple[1]
         totalBlankLines = totalBlankLines + tuple[2]
 
-    print("Total lines: " + str(totalLines))
-    print("Total comments: " + str(totalComments))
-    print("Total blank lines: " + str(totalBlankLines))
-    print("Code to comment ratio: " + str(float(totalLines - totalComments) / float(totalComments)))
+    if totalLines == 0:
+        print('No valid files with the provided extensions were found')
+    else:
+        totalCodeLines = totalLines - totalBlankLines - totalComments
+
+        print("Total lines: " + str(totalLines))
+        print("Total comments: " + str(totalComments))
+        print("Total blank lines: " + str(totalBlankLines))
+        print("Code to comment ratio: " + str(float(totalLines - totalComments) / float(totalComments)))
+
+        labels = ['Code lines (' + str(totalCodeLines) + ')',
+        'Comments (' + str(totalComments) + ')',
+        'Blank lines (' + str(totalBlankLines) + ')']
+        sizes= [totalCodeLines, totalComments, totalBlankLines]
+
+        plt.pie(sizes, labels = labels, startangle = 90,
+            explode=(0.1, 0.1, 0.1), autopct='%1.2f%%')
+        plt.title(startingPlace)
+        plt.axis('equal')
+        plt.show()
+
+    print(lineSep)
 
 def findFiles(startingDirectory, extensions = [], recursive = False):
+    '''
+    Finds all files within the provided directory that 
+    end in one of the provided extensions.
+    '''
+
     ret = []
 
     if len(extensions) == 0:
@@ -115,7 +141,10 @@ def findFiles(startingDirectory, extensions = [], recursive = False):
     return ret
 
 def analyzeFile(file):
-    """Returns a tuple of the number of lines, comments, and blank lines in that order"""
+    """
+    Returns a tuple of the number of lines, comments, 
+    and blank lines in that order
+    """
 
     numComments = 0
     numLines = 0
@@ -150,7 +179,7 @@ def analyzeFile(file):
                     numComments = numComments + 1
             else:
                 numBlankLines = numBlankLines + 1
-    elif file.endswith('.py'):
+    elif file.endswith('.py') or file.endswith('.gdscript'):
          for line in fileLines:
             if len(line.strip()) > 0:
                 numLines = numLines + 1
@@ -159,7 +188,7 @@ def analyzeFile(file):
 
                 if line.startswith('"""') and line.endswith('"""'):
                     numComments = numComments + 1
-                elif line.startwith("'''") and line.endswith("'''"):
+                elif line.startswith("'''") and line.endswith("'''"):
                     numComments = numComments + 1
                 elif line.startswith('"""'):
                     blockMode = True
@@ -185,5 +214,10 @@ def analyzeFile(file):
 
     return (numLines, numComments, numBlankLines)
     
+# todo comment, add arg to just count lines and blank lines if specified extension has no function
+
 if __name__ == '__main__':
-    main()
+    '''
+    Parses the providec arguments and attempts to begin the py-my-code functionality.
+    '''
+    parseArgs()
