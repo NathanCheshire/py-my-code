@@ -17,7 +17,7 @@ def parseArgs():
     output = None
 
     global usageString
-    usageString = 'Usage: analyze.py [directory or file] [arguments (-r, -extensions .kt .java, -o myDirectory/myFileResults.txt)]'
+    usageString = 'Usage: analyze.py [directory or file] [arguments (-r, -extensions .kt .java, -o path/to/my/directory/results)]'
 
     global paramsFor
     paramsFor = None
@@ -108,12 +108,23 @@ def parseArgs():
         sizes= [totalCodeLines, totalComments, totalBlankLines]
 
         plt.pie(sizes, labels = labels, startangle = 90,
-            explode=(0.1, 0.1, 0.1), autopct='%1.2f%%')
+            explode=(0.1, 0.1, 0.1), autopct='%1.3f%%')
         plt.title(startingPlace)
         plt.axis('equal')
-        plt.show()
 
-    print(lineSep)
+        print(lineSep)
+
+        if output != None:
+            outputDirectory = output[:output.find('/')]
+
+            if not os.path.exists(outputDirectory):
+                os.makedirs(outputDirectory)
+
+            print('Saved master output to ', output, '.txt', sep = '')
+
+            print('Saved master chart to ', output, '.png', sep = '')
+            plt.savefig( output + '.png')
+
 
 def findFiles(startingDirectory, extensions = [], recursive = False):
     '''
